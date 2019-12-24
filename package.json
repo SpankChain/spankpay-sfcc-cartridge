@@ -4,7 +4,7 @@
   "description": "SpankPay",
   "main": "index.js",
   "paths": {
-    "base": "../sfra/storefront-reference-architecure/cartridges/app_storefront_base/"
+    "base": "./cartridges/app_storefront_base/"
   },
   "scripts": {
     "lint": "sgmf-scripts --lint js && sgmf-scripts --lint css",
