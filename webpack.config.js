@@ -7,7 +7,7 @@ var path = require('path');
         name: 'js',
         entry: sgmfScripts.createJsPath(),
         output: {
-            path: path.resolve('./plugin_spankpay/cartridge/static'),
+            path: path.resolve('./cartridges/plugin_spankpay/cartridge/static'),
             filename: '[name].js'
         },
         resolve: {
@@ -20,7 +20,7 @@ var path = require('path');
         name: 'scss',
         entry: sgmfScripts.createScssPath(),
         output: {
-            path: path.resolve('./plugin_spankpay/cartridge/static'),
+            path: path.resolve('./cartridges/plugin_spankpay/cartridge/static'),
             filename: '[name].css'
         },
         module: {
