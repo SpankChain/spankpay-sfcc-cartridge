@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<extensions xmlns="http://www.demandware.com/xml/bmmodules/2007-12-11" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.demandware.com/xml/bmmodules/2007-12-11 bmext.xsd">
+	<menuitem id="SpankPay" position="199999" site="false">
+		<name xml:lang="x-default">SpankPay</name>
+		<short_description xml:lang="x-default">SpankPay Merchant Functions</short_description>
+		<description xml:lang="x-default">SpankPay Merchant Functions</description>
+		<icon>icons/iconChainsaw.svg</icon>
+	</menuitem>
+	<menuaction id="spankpay_id01" menupath="SpankPay" position="299999" site="false">
+		<name xml:lang="x-default">Dashboard</name>
+		<short_description xml:lang="x-default">Dashboard</short_description>
+		<description xml:lang="x-default">Dashboard</description>
+		<exec pipeline="SpankPay_bm" node="Dashboard" />
+		<sub-pipelines>
+			<pipeline name="SpankPay_bm-Dashboard" />
+		</sub-pipelines>
+		<icon>icons/iconChainsaw.svg</icon>
+	</menuaction>
+	<menuaction id="spankpay_id02" menupath="SpankPay" position="399999" site="false">
+		<name xml:lang="x-default">Preferences</name>
+		<short_description xml:lang="x-default">Preferences</short_description>
+		<description xml:lang="x-default">Preferences</description>
+		<exec pipeline="SpankPay_bm" node="Prefs" />
+		<sub-pipelines>
+			<pipeline name="SpankPay_bm-Prefs" />
+		</sub-pipelines>
+		<icon>icons/iconChainsaw.svg</icon>
+	</menuaction>
+</extensions>

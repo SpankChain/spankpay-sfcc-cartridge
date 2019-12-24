@@ -1,0 +1,15 @@
+<div class="tab-pane spankpay-content" id="spankpay-content" role="tabpanel">
+        <!--- payment method is SpankPay --->
+        <input type="hidden" class="form-control"
+               name="${pdict.forms.billingForm.paymentMethod.htmlName}"
+               value="SPANKPAY"
+        />
+        <div class="spankpay" 
+                data-apikey="${dw.system.Site.getCurrent().getCustomPreferenceValue('spankpayPublicKey')}"
+                data-submiturl="${URLUtils.url('SpankPay-SubmitPayment')}"
+                data-callbackurl="${URLUtils.https('SpankPay-PlaceOrder')}"
+                data-allowanonymous="${dw.system.Site.getCurrent().getCustomPreferenceValue('spankpayAllowAnonymous')}"
+        >
+                <span class="text">${Resource.msg('button.checkout','spankpay',null)}</span>
+        </div>
+</div>
