@@ -501,15 +501,6 @@ if(spankpayEnabled) {
 
                 if(!empty(order.getCustomerEmail())) {
                     COHelpers.sendConfirmationEmail(order, req.locale.id);
-
-                    //sandbox mail is broken for some reason, but this works!
-                    let content = "Congrats on your crypto order number: " + order.orderNo;
-                    let mail = new dw.net.Mail();
-                    mail.addTo(order.customerEmail);
-                    mail.setFrom("no-reply@demandware.com");
-                    mail.setSubject(Resource.msg('subject.order.confirmation.email', 'order', null));
-                    mail.setContent(dw.value.MimeEncodedText(content));
-                    mail.send();
                 }
 
                 res.json({
