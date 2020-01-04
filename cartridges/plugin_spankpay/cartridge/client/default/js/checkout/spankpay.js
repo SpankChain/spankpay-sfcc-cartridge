@@ -50,9 +50,12 @@ $('.spankpay').on('click', function (e) {
 		}
 	});
 
-	var paymentForm = billingAddressForm + '&' + contactInfoForm + '&' + paymentInfoForm;
+	var paymentForm = billingAddressForm?billingAddressForm:'' + '&' + contactInfoForm?contactInfoForm:'' + '&' + paymentInfoForm?paymentInfoForm:'';
+	let existingOrderNumber = '';
+	if($(this).data('ordernumber') != '') { existingOrderNumber = '?existingOrderNumber=' + $(this).data('ordernumber'); }
+	
 	$.ajax({
-		url: $('.spankpay').data('submiturl'),
+		url: $('.spankpay').data('submiturl') + existingOrderNumber,
 		method: 'POST',
 		data: paymentForm,
 		success: function (data) {
@@ -82,6 +85,7 @@ $('.spankpay').on('click', function (e) {
 				scrollAnimate();
 				defer.resolve(data);
 
+				$('.spankpay').data('ordernumber', data.orderNo);
 				showSpankPay(data.orderNo, data.orderToken, data.orderTotal.toString(), data.orderCurrency, data.spankpayDescription);
 			}
 		},

@@ -13,7 +13,7 @@ if(spankpayEnabled) {
     server.post(
         'SubmitPayment',
         server.middleware.https,
-        csrfProtection.validateAjaxRequest,
+        //csrfProtection.validateAjaxRequest,
         function (req, res, next) {
             var PaymentManager = require('dw/order/PaymentMgr');
             var HookManager = require('dw/system/HookMgr');
@@ -92,7 +92,15 @@ if(spankpayEnabled) {
                 var hooksHelper = require('*/cartridge/scripts/helpers/hooks');
                 var validationHelpers = require('*/cartridge/scripts/helpers/basketValidationHelpers');
 
-                var currentBasket = BasketMgr.getCurrentBasket();
+                var currentBasket;
+
+                if(req.querystring.existingOrderNumber) {
+                    let OrderMgr = require('dw/order/OrderMgr');
+                    let order = OrderMgr.getOrder(req.querystring.existingOrderNumber);
+                    Transaction.wrap(function () { currentBasket = BasketMgr.createBasketFromOrder(order); });
+                } else {
+                    currentBasket = BasketMgr.getCurrentBasket();
+                }
 
                 var billingData = res.getViewData();
 
