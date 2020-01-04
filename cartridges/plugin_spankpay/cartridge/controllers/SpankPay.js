@@ -13,7 +13,7 @@ if(spankpayEnabled) {
     server.post(
         'SubmitPayment',
         server.middleware.https,
-        //csrfProtection.validateAjaxRequest,
+        csrfProtection.validateAjaxRequest,
         function (req, res, next) {
             var PaymentManager = require('dw/order/PaymentMgr');
             var HookManager = require('dw/system/HookMgr');
@@ -97,7 +97,18 @@ if(spankpayEnabled) {
                 if(req.querystring.existingOrderNumber) {
                     let OrderMgr = require('dw/order/OrderMgr');
                     let order = OrderMgr.getOrder(req.querystring.existingOrderNumber);
-                    Transaction.wrap(function () { currentBasket = BasketMgr.createBasketFromOrder(order); });
+                    if(order.customer.ID === req.currentCustomer.raw.ID) {
+                        Transaction.wrap(function () { currentBasket = BasketMgr.createBasketFromOrder(order); });
+                    } else {
+                        res.json({
+                            error: true,
+                            cartError: true,
+                            fieldErrors: [],
+                            serverErrors: [],
+                            redirectUrl: URLUtils.url('Cart-Show').toString()
+                        });
+                        return;
+                    }
                 } else {
                     currentBasket = BasketMgr.getCurrentBasket();
                 }
