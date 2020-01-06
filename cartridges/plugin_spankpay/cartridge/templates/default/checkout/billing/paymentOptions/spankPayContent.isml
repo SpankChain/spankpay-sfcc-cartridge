@@ -7,7 +7,9 @@
         <div class="spankpay" 
                 data-apikey="${dw.system.Site.getCurrent().getCustomPreferenceValue('spankpayPublicKey')}"
                 data-submiturl="${URLUtils.url('SpankPay-SubmitPayment')}"
+                data-resetturl="${URLUtils.url('SpankPay-Reset')}"
                 data-ordernumber=""
+                data-ordertoken=""
                 data-callbackurl="${URLUtils.https('SpankPay-PlaceOrder')}"
                 data-allowanonymous="${dw.system.Site.getCurrent().getCustomPreferenceValue('spankpayAllowAnonymous')}"
         >

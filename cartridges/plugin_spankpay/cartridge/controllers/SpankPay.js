@@ -97,9 +97,13 @@ if(spankpayEnabled) {
                 if(req.querystring.existingOrderNumber) {
                     let OrderMgr = require('dw/order/OrderMgr');
                     let order = OrderMgr.getOrder(req.querystring.existingOrderNumber);
-                    if(order.customer.ID === req.currentCustomer.raw.ID) {
-                        Transaction.wrap(function () { currentBasket = BasketMgr.createBasketFromOrder(order); });
-                    } else {
+                    let token = req.querystring.existingOrderToken;
+
+                    if (!order
+                        || !token
+                        || token !== order.orderToken
+                        || order.customer.ID !== req.currentCustomer.raw.ID
+                    ) {
                         res.json({
                             error: true,
                             cartError: true,
@@ -108,6 +112,8 @@ if(spankpayEnabled) {
                             redirectUrl: URLUtils.url('Cart-Show').toString()
                         });
                         return;
+                    } else {
+                        Transaction.wrap(function () { currentBasket = BasketMgr.createBasketFromOrder(order); });
                     }
                 } else {
                     currentBasket = BasketMgr.getCurrentBasket();
@@ -361,53 +367,46 @@ if(spankpayEnabled) {
             return next();
         }
     );
-/*
-    server.post(
-        'CreateSignature',
-        server.middleware.https,
-        function (req, res, next) {
-            var OrderMgr = require('dw/order/OrderMgr');
-            const spankpayUtils = require('~/cartridge/scripts/spankpay');
-            let secretKey = Site.getCurrent().getCustomPreferenceValue('spankpaySecretKey');
 
-            let orderNo = req.querystring.orderNo;
-            let order = OrderMgr.getOrder(orderNo);
-            let orderToken = order.getOrderToken();
-
-            let data = req.body;
-            data = data.replace('ORDERNO', orderNo);
-            data = data.replace('ORDERTOKEN', orderToken);
-
-            res.json({
-                orderNo: orderNo,
-                token: orderToken,
-                sig: spankpayUtils.signSpankPayData(secretKey, data),
-                body: data
-            });
-            return next();
-        }
-    );
-*/
-/*
     server.get(
-        'GetBankingInfo',
+        'Reset',
         server.middleware.https,
+        //csrfProtection.validateAjaxRequest, //this will fail until we pass along a form that contains it
         function (req, res, next) {
-            var OrderMgr = require('dw/order/OrderMgr');
+            var BasketMgr = require('dw/order/BasketMgr');
+            var Transaction = require('dw/system/Transaction');
+            var URLUtils = require('dw/web/URLUtils');
 
-            let orderNo = req.querystring.orderNo;
-            let order = OrderMgr.getOrder(orderNo);
+            if(req.querystring.existingOrderNumber) {
+                let OrderMgr = require('dw/order/OrderMgr');
+                let order = OrderMgr.getOrder(req.querystring.existingOrderNumber);
+                let token = req.querystring.existingOrderToken;
 
-            res.json({
-                orderNo: orderNo,
-                bankAccountHolder: order.getPaymentInstruments('SPANKPAY')[0].getBankAccountHolder(),
-                bankAccountRoutingNumber: order.getPaymentInstruments('SPANKPAY')[0].getBankRoutingNumber(),
-                bankAccountNumber: order.getPaymentInstruments('SPANKPAY')[0].getBankAccountNumber()
-            });
+                if (!order
+                    || !token
+                    || token !== order.orderToken
+                    || order.customer.ID !== req.currentCustomer.raw.ID
+                ) {
+                    res.json({
+                        error: true,
+                        cartError: true,
+                        fieldErrors: [],
+                        serverErrors: [],
+                        redirectUrl: URLUtils.url('Cart-Show').toString()
+                    });
+                    return;
+                } else {
+                    Transaction.wrap(function () { BasketMgr.createBasketFromOrder(order); });
+                    res.json({
+                        orderNo: order.orderNo,
+                        orderToken: order.orderToken
+                    });
+                }
+            }
             return next();
         }
     );
-*/
+
     server.post(
         'PlaceOrder',
         server.middleware.https,
@@ -516,7 +515,10 @@ if(spankpayEnabled) {
                     return next();
                 }
 
-                Transaction.wrap(function () { order.removeRemoteHost(); }); //remove the IP address for the order, if any, because crypto!
+                Transaction.wrap(function () {
+                    order.removeRemoteHost(); //remove the IP address for the order, if any, because crypto!
+                    order.setPaymentStatus(Order.PAYMENT_STATUS_PAID);
+                });
 
                 if(!empty(order.getCustomerEmail())) {
                     COHelpers.sendConfirmationEmail(order, req.locale.id);

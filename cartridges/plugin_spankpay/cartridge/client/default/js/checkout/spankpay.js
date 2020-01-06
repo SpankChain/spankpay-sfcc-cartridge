@@ -51,11 +51,14 @@ $('.spankpay').on('click', function (e) {
 	});
 
 	var paymentForm = billingAddressForm?billingAddressForm:'' + '&' + contactInfoForm?contactInfoForm:'' + '&' + paymentInfoForm?paymentInfoForm:'';
-	let existingOrderNumber = '';
-	if($(this).data('ordernumber') != '') { existingOrderNumber = '?existingOrderNumber=' + $(this).data('ordernumber'); }
+	let existingOrderData = '';
+	if($(this).data('ordernumber') != '') {
+		existingOrderData = '?existingOrderNumber=' + $(this).data('ordernumber');
+		existingOrderData += '&existingOrderToken=' + $(this).data('ordertoken');
+	}
 	
 	$.ajax({
-		url: $('.spankpay').data('submiturl') + existingOrderNumber,
+		url: $('.spankpay').data('submiturl') + existingOrderData,
 		method: 'POST',
 		data: paymentForm,
 		success: function (data) {
@@ -86,6 +89,7 @@ $('.spankpay').on('click', function (e) {
 				defer.resolve(data);
 
 				$('.spankpay').data('ordernumber', data.orderNo);
+				$('.spankpay').data('ordertoken', data.orderToken);
 				showSpankPay(data.orderNo, data.orderToken, data.orderTotal.toString(), data.orderCurrency, data.spankpayDescription);
 			}
 		},
@@ -125,6 +129,7 @@ spankpay.on('payment', payment => {
 			$('.error-message').show();
 			$('.error-message-text').text(response.errorMessage);
 			scrollAnimate($('.error-message'));
+			//$('.spankpay').attr('disabled', false);
 		}
 	} else {
 		nextURL = response.confirmationURL;
@@ -133,6 +138,26 @@ spankpay.on('payment', payment => {
 
 spankpay.on('close', () => {
 	if(nextURL) { window.location.href = nextURL; }
+	else { //reset the order in case customer has changed their mind
+		let existingOrderData = '';
+		if($('.spankpay').data('ordernumber') != '') {
+			existingOrderData = 'existingOrderNumber=' + $('.spankpay').data('ordernumber');
+			existingOrderData += '&existingOrderToken=' + $('.spankpay').data('ordertoken');
+		}
+		if(existingOrderData != '') {
+			$.ajax({
+				url: $('.spankpay').data('resetturl'),
+				method: 'GET',
+				data: existingOrderData,
+				success: function (data) {
+					if(data.redirectURL) { window.location.href = data.redirectURL; }
+					$('.spankpay').data('ordernumber', data.orderNo);
+					$('.spankpay').data('ordertoken', data.orderToken);
+				}
+			});
+		}
+		$('.spankpay').attr('disabled', false);
+	}
 });
 
 /*
