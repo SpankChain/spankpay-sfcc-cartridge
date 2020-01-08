@@ -27,16 +27,16 @@ This cartridge is built against SFCC [SFRA](https://github.com/SalesforceCommerc
 
 5. Run `npm run uploadCartridge`. It will upload `app_storefront_base`, `modules`, `bm_app_storefront_base`, and `plugin_spankpay` cartridges to the sandbox you specified in `dw.json` file.
 
-6. Add the `plugin_spankpay` cartridge to your cartridge path in _Administration >  Sites >  Manage Sites > RefArch - Settings_ (Note: This should already be populated by the sample data in Step 6).
+6. Add the `plugin_spankpay` cartridge to your cartridge path in _Administration >  Sites >  Manage Sites > YOURSITE - Settings_.
 
 7. Import `payment-methods.xml` from the `./metadata/ordering` folder with Business Manager to install the custom SPANKPAY payment method.
 
 8. Import `system-object-types.xml` from the `./metadata/site/meta` folder with Business Manager to install the custom SPANKPAY site preferences.
 
-9. Navigate to the new SPANKPAY custom site preferences in Business Manager (`Merchant Tools -> Site Preferences -> Custom Preferences -> SPANKPAY`) and configure your private/public keys and other preferences.
+9. Navigate to the new SPANKPAY custom site preferences in Business Manager (_Merchant Tools -> Site Preferences -> Custom Preferences -> SPANKPAY_) and configure your private/public keys and other preferences.
 
-10. Navigate to `Merchant Tools -> Ordering -> Payment Processors` and create a NEW Payment Processor with ID: SPANKPAY and Description: SpankPay by SpankChain
+10. Navigate to _Merchant Tools -> Ordering -> Payment Processors_ and create a NEW Payment Processor with ID: SPANKPAY and Description: SpankPay by SpankChain
 
-11. Navigate to `Administration -> Organization -> Roles -> {APPROPRIATE ROLE} - Business Manager Modules` and find the "SpankPay" modules Dashboard and Prefernces, and allow `write` permissions where appropriate. This will append a new SpankPay submenu under `Merchant Tools`
+11. Navigate to _Administration -> Organization -> Roles -> {APPROPRIATE ROLE} - Business Manager Modules_ and find the "SpankPay" modules Dashboard and Prefernces, and allow `write` permissions where appropriate. This will append a new SpankPay submenu under _Merchant Tools_
 
 12. SpankPay!
