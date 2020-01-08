@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
+    <type-extension type-id="Order">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="spankpayNonces">
+                <display-name xml:lang="x-default">SpankPay Nonces</display-name>
+                <description xml:lang="x-default">SpankPay nonces to make sure a webhook call for an order never gets processed more than once.</description>
+                <type>set-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>true</externally-managed-flag>
+            </attribute-definition>
+        </custom-attribute-definitions>
+    </type-extension>
+
+    <type-extension type-id="SitePreferences">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="spankpayAllowAnonymous">
+                <display-name xml:lang="x-default">SpankPay Allow Anonymous Checkout</display-name>
+                <description xml:lang="x-default">Removes billing information requirements for checkout.</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>true</default-value>
+            </attribute-definition>
+            <attribute-definition attribute-id="spankpayEnabled">
+                <display-name xml:lang="x-default">SpankPay Enabled</display-name>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="spankpayPublicKey">
+                <display-name xml:lang="x-default">SpankPay Public Key</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="spankpaySecretKey">
+                <display-name xml:lang="x-default">SpankPay Secret Key</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="SPANKPAY">
+                <display-name xml:lang="x-default">SpankPay Configurations</display-name>
+                <attribute attribute-id="spankpayEnabled"/>
+                <attribute attribute-id="spankpayPublicKey"/>
+                <attribute attribute-id="spankpaySecretKey"/>
+                <attribute attribute-id="spankpayAllowAnonymous"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+</metadata>

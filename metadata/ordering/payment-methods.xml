@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<payment-settings xmlns="http://www.demandware.com/xml/impex/paymentsettings/2009-09-15">
+
+    <payment-method method-id="SPANKPAY">
+        <name xml:lang="x-default">SpankPay</name>
+        <description xml:lang="x-default">SpankPay by SpankChain</description>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>SPANKPAY</processor-id>
+    </payment-method>
+
+</payment-settings>
