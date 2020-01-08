@@ -27,7 +27,7 @@ This cartridge is built against SFCC [SFRA](https://github.com/SalesforceCommerc
 
 5. Run `npm run uploadCartridge`. It will upload `app_storefront_base`, `modules`, `bm_app_storefront_base`, and `plugin_spankpay` cartridges to the sandbox you specified in `dw.json` file.
 
-6. Add the `plugin_spankpay` cartridge to your cartridge path in _Administration >  Sites >  Manage Sites > YOURSITE - Settings_.
+6. Add the `plugin_spankpay` cartridge to your cartridge path in _Administration >  Sites >  Manage Sites > {YOURSITE} - Settings_.
 
 7. Import `payment-methods.xml` from the `./metadata/ordering` folder with Business Manager to install the custom SPANKPAY payment method.
 
