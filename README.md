@@ -17,11 +17,11 @@ This cartridge is built against SFCC [SFRA](https://github.com/SalesforceCommerc
 4. Create `dw.json` file in the root of the project:
 ```json
 {
-    "hostname": "your-sandbox-hostname.demandware.net",
-    "username": "yourlogin",
+	"hostname": "your-sandbox-hostname.demandware.net",
+	"username": "yourlogin",
 	"password": "yourpwd",
 	"cartridge": ["app_storefront_base", "bm_app_storefront_base", "plugin_spankpay", "modules"],
-    "code-version": "version_to_upload_to"
+	"code-version": "version_to_upload_to"
 }
 ```
 
