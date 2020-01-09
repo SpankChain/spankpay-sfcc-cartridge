@@ -50,7 +50,7 @@
                 <isif condition="${dw.system.Site.getCurrent().getCustomPreferenceValue('spankpayEnabled') && dw.system.Site.getCurrent().getCustomPreferenceValue('spankpayAllowAnonymous')}">
                     <div>
                         <p class="spankpayAllowAnonymous">
-                         <isprint value="${Resource.msg('msg.checkout.allowanonymous','spankpay',null)}" encoding="off"/>
+                            <isprint value="${Resource.msg('msg.checkout.allowanonymous','spankpay',null)}" encoding="off"/>
                         </p>
                     </div>
                 </isif>
