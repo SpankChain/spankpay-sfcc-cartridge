@@ -5,15 +5,17 @@
     <!----------------------------------------------------------------------------------->
     <isscript>
         var assets = require('*/cartridge/scripts/assets.js');
-        assets.addJs('/js/checkout.js');
         assets.addCss('/css/checkout/checkout.css');
+        if(dw.system.Site.getCurrent().getCustomPreferenceValue('spankpayEnabled')) {
+            assets.addJs('/js/checkoutSpankPay.js');
+            assets.addCss('/css/spankpay.css');
+        } else {
+            assets.addJs('/js/checkout.js');
+        }
     </isscript>
 
     <isif condition="${dw.system.Site.getCurrent().getCustomPreferenceValue('spankpayEnabled')}">
         <script src="https://pay.spankchain.com/spankpay.js"></script>
-        <isscript>
-            assets.addCss('/css/spankpay.css');
-        </isscript>
     </isif>
 
     <isif condition="${pdict.reportingURLs && pdict.reportingURLs.length}">
