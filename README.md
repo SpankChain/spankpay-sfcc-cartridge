@@ -31,7 +31,7 @@ This cartridge is built against SFCC [SFRA](https://github.com/SalesforceCommerc
 
 7. Import `payment-methods.xml` from the `./metadata/ordering` folder with Business Manager to install the custom SPANKPAY payment method.
 
-8. Import `system-object-types.xml` from the `./metadata/site/meta` folder with Business Manager to install the custom SPANKPAY site preferences.
+8. Import `system-and-custom-object-types.xml` from the `./metadata/site/meta` folder with Business Manager to install the custom SPANKPAY Site Preferences and spankPayAuth Custom Object type.
 
 9. Navigate to the new SPANKPAY custom site preferences in Business Manager (_Merchant Tools -> Site Preferences -> Custom Preferences -> SPANKPAY_) and configure your private/public keys and other preferences.
 

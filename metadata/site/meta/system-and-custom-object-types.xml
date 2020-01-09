@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
-    <type-extension type-id="Order">
-        <custom-attribute-definitions>
-            <attribute-definition attribute-id="spankpayNonces">
-                <display-name xml:lang="x-default">SpankPay Nonces</display-name>
-                <description xml:lang="x-default">SpankPay nonces to make sure a webhook call for an order never gets processed more than once.</description>
-                <type>set-of-string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>true</externally-managed-flag>
-            </attribute-definition>
-        </custom-attribute-definitions>
-    </type-extension>
-
+    
     <type-extension type-id="SitePreferences">
         <custom-attribute-definitions>
             <attribute-definition attribute-id="spankpayAllowAnonymous">
@@ -53,4 +42,33 @@
             </attribute-group>
         </group-definitions>
     </type-extension>
+
+    <custom-type type-id="spankPayAuth">
+        <display-name xml:lang="x-default">SpankPay Auth Container</display-name>
+        <description xml:lang="x-default">The SpankPay Auth Container is a reference to a storefront basket and used by SpankPay's callback webhook to update the status of a payment prior to order creation.</description>
+        <staging-mode>no-staging</staging-mode>
+        <storage-scope>site</storage-scope>
+        <key-definition attribute-id="id">
+            <type>string</type>
+            <min-length>0</min-length>
+        </key-definition>
+        <attribute-definitions>
+            <attribute-definition attribute-id="invoiceId">
+                <display-name xml:lang="x-default">SpankPay Invoice ID</display-name>
+                <type>string</type>
+                <localizable-flag>false</localizable-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>true</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="nonce">
+                <display-name xml:lang="x-default">Nonce</display-name>
+                <type>set-of-string</type>
+                <localizable-flag>false</localizable-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>true</externally-managed-flag>
+            </attribute-definition>
+        </attribute-definitions>
+    </custom-type>
+
 </metadata>
