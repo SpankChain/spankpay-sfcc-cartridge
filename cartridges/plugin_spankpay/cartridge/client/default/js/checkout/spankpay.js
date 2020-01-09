@@ -51,14 +51,9 @@ $('.spankpay').on('click', function (e) {
 	});
 
 	var paymentForm = billingAddressForm?billingAddressForm:'' + '&' + contactInfoForm?contactInfoForm:'' + '&' + paymentInfoForm?paymentInfoForm:'';
-	let existingOrderData = '';
-	if($(this).data('ordernumber') != '') {
-		existingOrderData = '?existingOrderNumber=' + $(this).data('ordernumber');
-		existingOrderData += '&existingOrderToken=' + $(this).data('ordertoken');
-	}
 	
 	$.ajax({
-		url: $('.spankpay').data('submiturl') + existingOrderData,
+		url: $('.spankpay').data('submiturl'),
 		method: 'POST',
 		data: paymentForm,
 		success: function (data) {
@@ -88,9 +83,8 @@ $('.spankpay').on('click', function (e) {
 				scrollAnimate();
 				defer.resolve(data);
 
-				$('.spankpay').data('ordernumber', data.orderNo);
-				$('.spankpay').data('ordertoken', data.orderToken);
-				showSpankPay(data.orderNo, data.orderToken, data.orderTotal.toString(), data.orderCurrency, data.spankpayDescription);
+				$('.spankpay').data('orderid', data.orderID);
+				showSpankPay(data.orderID, data.orderTotal.toString(), data.orderCurrency, data.spankpayDescription);
 			}
 		},
 		error: function (err) {
@@ -102,61 +96,71 @@ $('.spankpay').on('click', function (e) {
 	});
 });
 
-function showSpankPay(orderNo, orderToken, orderTotal, orderCurrency, description) {
+function showSpankPay(orderID, orderTotal, orderCurrency, description) {
 	spankpay.show({
 		apiKey: $('.spankpay').data('apikey'),
 		amount: orderTotal,
 		currency: orderCurrency,
 		description: description,
 		metadata: {
-			orderNo: orderNo,
-			orderToken: orderToken
+			orderID: orderID
 		},
 		callbackUrl: $('.spankpay').data('callbackurl')
 	});
 }
 
 //spankpay.on('open', () => { });
+//spankpay.on('close', () => {});
 
 spankpay.on('payment', payment => {
 	console.log('Payment: ' + payment.status, payment);
 	let response = payment.receipt.responseBody;
 	if(payment.status != 'succeeded') {
-		if(response.redirectURL) {
-			nextURL = response.redirectURL;
-		} else {
-			//close the spankpay window?
-			$('.error-message').show();
-			$('.error-message-text').text(response.errorMessage);
-			scrollAnimate($('.error-message'));
-			//$('.spankpay').attr('disabled', false);
-		}
+		//close the spankpay window?
+		$('.error-message').show();
+		$('.error-message-text').text(response.errorMessage);
+		scrollAnimate($('.error-message'));
+		$('.spankpay').attr('disabled', false);
 	} else {
-		nextURL = response.confirmationURL;
-	}
-});
-
-spankpay.on('close', () => {
-	if(nextURL) { window.location.href = nextURL; }
-	else { //reset the order in case customer has changed their mind
-		let existingOrderData = '';
-		if($('.spankpay').data('ordernumber') != '') {
-			existingOrderData = 'existingOrderNumber=' + $('.spankpay').data('ordernumber');
-			existingOrderData += '&existingOrderToken=' + $('.spankpay').data('ordertoken');
-		}
-		if(existingOrderData != '') {
+		if(response.placeOrderURL) { //original checkout.js functionality
 			$.ajax({
-				url: $('.spankpay').data('resetturl'),
-				method: 'GET',
-				data: existingOrderData,
+				url: response.placeOrderURL,
+				method: 'POST',
 				success: function (data) {
-					if(data.redirectURL) { window.location.href = data.redirectURL; }
-					$('.spankpay').data('ordernumber', data.orderNo);
-					$('.spankpay').data('ordertoken', data.orderToken);
+					// enable the placeOrder button here
+					$('body').trigger('checkout:enableButton', '.next-step-button button');
+					$('.spankpay').attr('disabled', false);
+					if (data.error) {
+						if (data.cartError) {
+							window.location.href = data.redirectUrl;
+							defer.reject();
+						} else {
+							// go to appropriate stage and display error message
+							defer.reject(data);
+						}
+					} else {
+						var continueUrl = data.continueUrl;
+						var urlParams = {
+							ID: data.orderID,
+							token: data.orderToken
+						};
+	
+						continueUrl += (continueUrl.indexOf('?') !== -1 ? '&' : '?') +
+							Object.keys(urlParams).map(function (key) {
+								return key + '=' + encodeURIComponent(urlParams[key]);
+							}).join('&');
+	
+						window.location.href = continueUrl;
+						defer.resolve(data);
+					}
+				},
+				error: function () {
+					// enable the placeOrder button here
+					$('body').trigger('checkout:enableButton', $('.next-step-button button'));
+					$('.spankpay').attr('disabled', false);
 				}
 			});
 		}
-		$('.spankpay').attr('disabled', false);
 	}
 });
 

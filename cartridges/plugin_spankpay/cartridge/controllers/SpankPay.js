@@ -88,36 +88,12 @@ if(spankpayEnabled) {
                 var OrderModel = require('*/cartridge/models/order');
                 var URLUtils = require('dw/web/URLUtils');
                 var Locale = require('dw/util/Locale');
+                var CustomObjectMgr = require('dw/object/CustomObjectMgr');
                 var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
                 var hooksHelper = require('*/cartridge/scripts/helpers/hooks');
                 var validationHelpers = require('*/cartridge/scripts/helpers/basketValidationHelpers');
 
-                var currentBasket;
-
-                if(req.querystring.existingOrderNumber) {
-                    let OrderMgr = require('dw/order/OrderMgr');
-                    let order = OrderMgr.getOrder(req.querystring.existingOrderNumber);
-                    let token = req.querystring.existingOrderToken;
-
-                    if (!order
-                        || !token
-                        || token !== order.orderToken
-                        || order.customer.ID !== req.currentCustomer.raw.ID
-                    ) {
-                        res.json({
-                            error: true,
-                            cartError: true,
-                            fieldErrors: [],
-                            serverErrors: [],
-                            redirectUrl: URLUtils.url('Cart-Show').toString()
-                        });
-                        return;
-                    } else {
-                        Transaction.wrap(function () { currentBasket = BasketMgr.createBasketFromOrder(order); });
-                    }
-                } else {
-                    currentBasket = BasketMgr.getCurrentBasket();
-                }
+                var currentBasket = BasketMgr.getCurrentBasket();
 
                 var billingData = res.getViewData();
 
@@ -340,14 +316,18 @@ if(spankpayEnabled) {
                     return next();
                 }
 
-                // Creates a new order.
-                var order = COHelpers.createOrder(currentBasket);
-                if (!order) {
-                    res.json({
-                        error: true,
-                        errorMessage: Resource.msg('error.technical', 'checkout', null)
+                //create our Auth object
+                let spankPayAuth = CustomObjectMgr.getCustomObject('spankPayAuth', req.currentCustomer.raw.ID);
+                if(empty(spankPayAuth)) { //if we don't have an object for this customer, create one
+                    Transaction.wrap(function () {
+                        spankPayAuth = CustomObjectMgr.createCustomObject('spankPayAuth', req.currentCustomer.raw.ID);
                     });
-                    return next();
+                }
+                //spankPayAuth should be blank unless the customer abandoned the process, wipe out any existing data just in case
+                if(!empty(spankPayAuth.custom.invoiceId)) {
+                    Transaction.wrap(function () {
+                        spankPayAuth.custom.invoiceId = null;
+                    });
                 }
 
                 res.json({
@@ -355,10 +335,9 @@ if(spankpayEnabled) {
                     customer: accountModel,
                     order: basketModel,
                     form: billingForm,
-                    orderNo: order.getOrderNo(),
-                    orderToken: order.getOrderToken(),
-                    orderTotal: order.getTotalGrossPrice().value,
-                    orderCurrency: order.getTotalGrossPrice().currencyCode,
+                    orderID: spankPayAuth.custom.id,
+                    orderTotal: currentBasket.getTotalGrossPrice().value,
+                    orderCurrency: currentBasket.getTotalGrossPrice().currencyCode,
                     spankpayDescription: Resource.msg('spankpay.description', 'spankpay', null),
                     error: false
                 });
@@ -367,58 +346,16 @@ if(spankpayEnabled) {
             return next();
         }
     );
-
-    server.get(
-        'Reset',
-        server.middleware.https,
-        //csrfProtection.validateAjaxRequest, //this will fail until we pass along a form that contains it
-        function (req, res, next) {
-            var BasketMgr = require('dw/order/BasketMgr');
-            var Transaction = require('dw/system/Transaction');
-            var URLUtils = require('dw/web/URLUtils');
-
-            if(req.querystring.existingOrderNumber) {
-                let OrderMgr = require('dw/order/OrderMgr');
-                let order = OrderMgr.getOrder(req.querystring.existingOrderNumber);
-                let token = req.querystring.existingOrderToken;
-
-                if (!order
-                    || !token
-                    || token !== order.orderToken
-                    || order.customer.ID !== req.currentCustomer.raw.ID
-                ) {
-                    res.json({
-                        error: true,
-                        cartError: true,
-                        fieldErrors: [],
-                        serverErrors: [],
-                        redirectUrl: URLUtils.url('Cart-Show').toString()
-                    });
-                    return;
-                } else {
-                    Transaction.wrap(function () { BasketMgr.createBasketFromOrder(order); });
-                    res.json({
-                        orderNo: order.orderNo,
-                        orderToken: order.orderToken
-                    });
-                }
-            }
-            return next();
-        }
-    );
-
+    
     server.post(
-        'PlaceOrder',
+        'Auth',
         server.middleware.https,
         function (req, res, next) {
-            var URLUtils = require('dw/web/URLUtils');
-            var Order = require('dw/order/Order');
-            var OrderMgr = require('dw/order/OrderMgr');
-            var Resource = require('dw/web/Resource');
             var Site = require('dw/system/Site');
+            var Resource = require('dw/web/Resource');
+            var CustomObjectMgr = require('dw/object/CustomObjectMgr');
             var Transaction = require('dw/system/Transaction');
-            var COHelpers = require('*/cartridge/scripts/checkout/checkoutHelpers');
-            var hooksHelper = require('*/cartridge/scripts/helpers/hooks');
+            var URLUtils = require('dw/web/URLUtils');
             const spankpayUtils = require('~/cartridge/scripts/spankpay');
 
             let sig = req.httpHeaders.get('x-spankpay-signature');
@@ -437,12 +374,11 @@ if(spankpayEnabled) {
             let spankPayData = spankpayUtils.decodeSpankPayWebhook(secretKey, sig, req.body);
             if(spankPayData[0]) {
                 let invoiceObj = spankPayData[0];
-                let orderNo = invoiceObj.invoice.metadata.orderNo ? invoiceObj.invoice.metadata.orderNo : null;
-                let orderToken = invoiceObj.invoice.metadata.orderToken ? invoiceObj.invoice.metadata.orderToken : null;
-                let order = OrderMgr.getOrder(orderNo);
+                let orderID = invoiceObj.invoice.metadata.orderID ? invoiceObj.invoice.metadata.orderID : null;
+                let spankPayAuth = CustomObjectMgr.getCustomObject('spankPayAuth', orderID);
 
-                //get the order via orderNo and orderToken and make sure it's in CREATED status
-                if(!order || !orderNo || !orderToken || orderToken !== order.orderToken) {
+                //get the "order" Custom Object via orderID
+                if(!orderID || !spankPayAuth) {
                     res.json({
                         received: false,
                         errorMessage: Resource.msg('error.webhook.missingorder', 'spankpay', null)
@@ -450,25 +386,17 @@ if(spankpayEnabled) {
                     return next();
                 }
 
-                if(order.getStatus().value !== Order.ORDER_STATUS_CREATED) {
-                    res.json({
-                        received: false,
-                        errorMessage: Resource.msg('error.webhook.orderprocessed', 'spankpay', null)
-                    });
-                    return next();
-                }
-
-                //save the signature as the nonce on the order (spankpayNonces) to make sure we don't process the same request more than once
+                //save the signature as the nonce on the auth object to make sure we don't process the same request more than once
                 //there should be a better way to do this, but the custom object set of string proved to be... difficult to work with
                 let nonces = [];
-                if(order.custom.spankpayNonces.length > 0) {
-                    for(let i=0;i<order.custom.spankpayNonces.length;i++) {
-                        nonces.push(order.custom.spankpayNonces[i]);
+                if(spankPayAuth.custom.nonce.length > 0) {
+                    for(let i=0;i<spankPayAuth.custom.nonce.length;i++) {
+                        nonces.push(spankPayAuth.custom.nonce[i]);
                     }
                 }
                 if(nonces.indexOf(sig) == -1) {
                     nonces.push(sig);
-                    Transaction.wrap(function () { order.custom.spankpayNonces = nonces; });
+                    Transaction.wrap(function () { spankPayAuth.custom.nonce = nonces; });
                 } else {
                     res.json({
                         received: false,
@@ -477,63 +405,227 @@ if(spankpayEnabled) {
                     return next();
                 }
 
-                // Handles payment "authorization"
-                var handlePaymentResult = COHelpers.handlePayments(order, invoiceObj.invoiceId);
-                if (handlePaymentResult.error) {
-                    res.json({
-                        received: false,
-                        errorMessage: Resource.msg('error.technical', 'checkout', null)
-                    });
-                    return next();
-                }
-
-                //fraud detection isn't really a thing for crypto yet, so this is largely useless
-                var fraudDetectionStatus = hooksHelper('app.fraud.detection', 'fraudDetection', order, require('*/cartridge/scripts/hooks/fraudDetection').fraudDetection);
-                if (fraudDetectionStatus.status === 'fail') {
-                    Transaction.wrap(function () { OrderMgr.failOrder(order, true); });
-
-                    // fraud detection failed
-                    //req.session.privacyCache.set('fraudDetectionStatus', true); //not settable since this is a webhook from SpankPay
-
-                    res.json({
-                        received: false,
-                        cartError: true,
-                        redirectURL: URLUtils.url('Error-ErrorCode', 'err', fraudDetectionStatus.errorCode).toString(),
-                        errorMessage: Resource.msg('error.technical', 'checkout', null)
-                    });
-
-                    return next();
-                }
-
-                // Places the order
-                var placeOrderResult = COHelpers.placeOrder(order, fraudDetectionStatus);
-                if (placeOrderResult.error) {
-                    res.json({
-                        received: false,
-                        errorMessage: Resource.msg('error.technical', 'checkout', null)
-                    });
-                    return next();
-                }
-
+                //save the invoice to our auth object
                 Transaction.wrap(function () {
-                    order.removeRemoteHost(); //remove the IP address for the order, if any, because crypto!
-                    order.setPaymentStatus(Order.PAYMENT_STATUS_PAID);
+                    spankPayAuth.custom.invoiceId = invoiceObj.invoiceId;
                 });
-
-                if(!empty(order.getCustomerEmail())) {
-                    COHelpers.sendConfirmationEmail(order, req.locale.id);
-                }
 
                 res.json({
                     received: true,
-                    confirmationURL: URLUtils.url('Order-Confirm','ID',orderNo,'token',orderToken).toString()
+                    placeOrderURL: URLUtils.url('SpankPay-PlaceOrder').toString()
                 });
+
             } else {
                 res.json({
                     received: false,
                     reason: spankPayData[2]
                 });
             }
+            return next();
+        }
+    );
+
+    server.post(
+        'PlaceOrder',
+        server.middleware.https,
+        function (req, res, next) {
+            var BasketMgr = require('dw/order/BasketMgr');
+            var OrderMgr = require('dw/order/OrderMgr');
+            var Order = require('dw/order/Order');
+            var Resource = require('dw/web/Resource');
+            var Transaction = require('dw/system/Transaction');
+            var URLUtils = require('dw/web/URLUtils');
+            var CustomObjectMgr = require('dw/object/CustomObjectMgr');
+            var basketCalculationHelpers = require('*/cartridge/scripts/helpers/basketCalculationHelpers');
+            var hooksHelper = require('*/cartridge/scripts/helpers/hooks');
+            var COHelpers = require('*/cartridge/scripts/checkout/checkoutHelpers');
+            var validationHelpers = require('*/cartridge/scripts/helpers/basketValidationHelpers');
+            var addressHelpers = require('*/cartridge/scripts/helpers/addressHelpers');
+
+            var currentBasket = BasketMgr.getCurrentBasket();
+
+            if (!currentBasket) {
+                res.json({
+                    error: true,
+                    cartError: true,
+                    fieldErrors: [],
+                    serverErrors: [],
+                    redirectUrl: URLUtils.url('Cart-Show').toString()
+                });
+                return next();
+            }
+
+            var validatedProducts = validationHelpers.validateProducts(currentBasket);
+            if (validatedProducts.error) {
+                res.json({
+                    error: true,
+                    cartError: true,
+                    fieldErrors: [],
+                    serverErrors: [],
+                    redirectUrl: URLUtils.url('Cart-Show').toString()
+                });
+                return next();
+            }
+
+            if (req.session.privacyCache.get('fraudDetectionStatus')) {
+                res.json({
+                    error: true,
+                    cartError: true,
+                    redirectUrl: URLUtils.url('Error-ErrorCode', 'err', '01').toString(),
+                    errorMessage: Resource.msg('error.technical', 'checkout', null)
+                });
+
+                return next();
+            }
+
+            var validationOrderStatus = hooksHelper('app.validate.order', 'validateOrder', currentBasket, require('*/cartridge/scripts/hooks/validateOrder').validateOrder);
+            if (validationOrderStatus.error) {
+                res.json({
+                    error: true,
+                    errorMessage: validationOrderStatus.message
+                });
+                return next();
+            }
+
+            // Check to make sure there is a shipping address
+            if (currentBasket.defaultShipment.shippingAddress === null) {
+                res.json({
+                    error: true,
+                    errorStage: {
+                        stage: 'shipping',
+                        step: 'address'
+                    },
+                    errorMessage: Resource.msg('error.no.shipping.address', 'checkout', null)
+                });
+                return next();
+            }
+
+            // Check to make sure billing address exists
+            if (!currentBasket.billingAddress) {
+                res.json({
+                    error: true,
+                    errorStage: {
+                        stage: 'payment',
+                        step: 'billingAddress'
+                    },
+                    errorMessage: Resource.msg('error.no.billing.address', 'checkout', null)
+                });
+                return next();
+            }
+
+            // Calculate the basket
+            Transaction.wrap(function () {
+                basketCalculationHelpers.calculateTotals(currentBasket);
+            });
+
+            // Re-validates existing payment instruments
+            var validPayment = COHelpers.validatePayment(req, currentBasket);
+            if (validPayment.error) {
+                res.json({
+                    error: true,
+                    errorStage: {
+                        stage: 'payment',
+                        step: 'paymentInstrument'
+                    },
+                    errorMessage: Resource.msg('error.payment.not.valid', 'checkout', null)
+                });
+                return next();
+            }
+
+            // Re-calculate the payments.
+            var calculatedPaymentTransactionTotal = COHelpers.calculatePaymentTransaction(currentBasket);
+            if (calculatedPaymentTransactionTotal.error) {
+                res.json({
+                    error: true,
+                    errorMessage: Resource.msg('error.technical', 'checkout', null)
+                });
+                return next();
+            }
+
+            // Creates a new order.
+            var order = COHelpers.createOrder(currentBasket);
+            if (!order) {
+                res.json({
+                    error: true,
+                    errorMessage: Resource.msg('error.technical', 'checkout', null)
+                });
+                return next();
+            }
+
+            // Handles payment authorization
+            let spankPayAuth = CustomObjectMgr.getCustomObject('spankPayAuth', req.currentCustomer.raw.ID);
+
+            var handlePaymentResult = COHelpers.handlePayments(order, spankPayAuth.custom.invoiceId);
+            if (handlePaymentResult.error) {
+                res.json({
+                    error: true,
+                    errorMessage: Resource.msg('error.technical', 'checkout', null)
+                });
+                return next();
+            }
+
+            var fraudDetectionStatus = hooksHelper('app.fraud.detection', 'fraudDetection', currentBasket, require('*/cartridge/scripts/hooks/fraudDetection').fraudDetection);
+            if (fraudDetectionStatus.status === 'fail') {
+                Transaction.wrap(function () { OrderMgr.failOrder(order, true); });
+
+                // fraud detection failed
+                req.session.privacyCache.set('fraudDetectionStatus', true);
+
+                res.json({
+                    error: true,
+                    cartError: true,
+                    redirectUrl: URLUtils.url('Error-ErrorCode', 'err', fraudDetectionStatus.errorCode).toString(),
+                    errorMessage: Resource.msg('error.technical', 'checkout', null)
+                });
+
+                return next();
+            }
+
+            // Places the order
+            var placeOrderResult = COHelpers.placeOrder(order, fraudDetectionStatus);
+            if (placeOrderResult.error) {
+                res.json({
+                    error: true,
+                    errorMessage: Resource.msg('error.technical', 'checkout', null)
+                });
+                return next();
+            }
+
+            if (req.currentCustomer.addressBook) {
+                // save all used shipping addresses to address book of the logged in customer
+                var allAddresses = addressHelpers.gatherShippingAddresses(order);
+                allAddresses.forEach(function (address) {
+                    if (!addressHelpers.checkIfAddressStored(address, req.currentCustomer.addressBook.addresses)) {
+                        addressHelpers.saveAddress(address, req.currentCustomer, addressHelpers.generateAddressName(address));
+                    }
+                });
+            }
+            
+            Transaction.wrap(function () {
+                order.removeRemoteHost(); //remove the IP address for the order, if any, because crypto!
+                order.setPaymentStatus(Order.PAYMENT_STATUS_PAID); //not require, but keeps things pretty in Business Manager
+            });
+
+            if(!empty(order.getCustomerEmail())) {
+                COHelpers.sendConfirmationEmail(order, req.locale.id);
+            }
+
+             // Reset usingMultiShip after successful Order placement
+            req.session.privacyCache.set('usingMultiShipping', false);
+
+            //trash our spankPayAuth object
+            try {
+                Transaction.wrap(function () {
+                    CustomObjectMgr.remove(spankPayAuth);
+                });
+            } catch(e) {}
+
+            res.json({
+                error: false,
+                orderID: order.orderNo,
+                orderToken: order.orderToken,
+                continueUrl: URLUtils.url('Order-Confirm').toString()
+            });
 
             return next();
         }
