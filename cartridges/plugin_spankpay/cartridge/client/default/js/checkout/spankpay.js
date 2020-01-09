@@ -50,7 +50,7 @@ $('.spankpay').on('click', function (e) {
 		}
 	});
 
-	var paymentForm = billingAddressForm?billingAddressForm:'' + '&' + contactInfoForm?contactInfoForm:'' + '&' + paymentInfoForm?paymentInfoForm:'';
+	var paymentForm = billingAddressForm + '&' + contactInfoForm + '&' + paymentInfoForm;
 	
 	$.ajax({
 		url: $('.spankpay').data('submiturl'),
