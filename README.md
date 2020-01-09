@@ -35,8 +35,8 @@ This cartridge is built against SFCC [SFRA](https://github.com/SalesforceCommerc
 
 9. Navigate to the new SPANKPAY custom site preferences in Business Manager (_Merchant Tools -> Site Preferences -> Custom Preferences -> SPANKPAY_) and configure your private/public keys and other preferences.
 
-10. Navigate to _Merchant Tools -> Ordering -> Payment Processors_ and create a NEW Payment Processor with ID: SPANKPAY and Description: SpankPay by SpankChain
+10. Navigate to _Merchant Tools -> Ordering -> Payment Processors_ and create a new Payment Processor with ID: SPANKPAY and Description: SpankPay by SpankChain
 
-11. Navigate to _Administration -> Organization -> Roles -> {APPROPRIATE ROLE} - Business Manager Modules_ and find the "SpankPay" modules Dashboard and Prefernces, and allow `write` permissions where appropriate. This will append a new SpankPay submenu under _Merchant Tools_
+11. Navigate to _Administration -> Organization -> Roles -> {APPROPRIATE ROLE} - Business Manager Modules_ and find the "SpankPay" modules "Dashboard" and "Preferences", and allow `write` permissions where appropriate. This will append a new SpankPay submenu under the site's _Merchant Tools_
 
 12. SpankPay!
