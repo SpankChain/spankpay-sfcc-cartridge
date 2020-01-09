@@ -14,7 +14,7 @@ This cartridge is built against SFCC [SFRA](https://github.com/SalesforceCommerc
 
 2. Run `npm install` to install all of the local dependencies (**node version 11.15 required**).
 
-3. Edit line 15 of the included `webpack.config.js` to point to your local version of the `storefront-reference-architcture` repository to allow jQuery to be refernced correctly in the build.
+3. Edit line 15 of the included `webpack.config.js` to point to your local version of the `storefront-reference-architcture` repository to allow jQuery to be referenced correctly in the build.
 
 4. Run `npm run compile:js` from the command line to compile all client-side JS files. Run `npm run compile:scss` to do the same for CSS.
 
