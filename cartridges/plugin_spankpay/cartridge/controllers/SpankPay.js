@@ -555,6 +555,14 @@ if(spankpayEnabled) {
             // Handles payment authorization
             let spankPayAuth = CustomObjectMgr.getCustomObject('spankPayAuth', req.currentCustomer.raw.ID);
 
+            if(empty(spankPayAuth.custom.invoiceId)) {
+                res.json({
+                    error: true,
+                    errorMessage: Resource.msg('error.webhook.missinginvoice', 'spankpay', null)
+                });
+                return next();
+            }
+
             var handlePaymentResult = COHelpers.handlePayments(order, spankPayAuth.custom.invoiceId);
             if (handlePaymentResult.error) {
                 res.json({
