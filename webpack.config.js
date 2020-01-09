@@ -9,12 +9,7 @@ module.exports = [{
     output: {
         path: path.resolve('./cartridges/plugin_spankpay/cartridge/static'),
         filename: '[name].js'
-    },
-    resolve: {
-        alias: {
-            jquery: path.resolve(__dirname, '../sfra/storefront-reference-architecture/node_modules/jquery')
-        }
-    },
+    }
 }, {
     mode: 'none',
     name: 'scss',
