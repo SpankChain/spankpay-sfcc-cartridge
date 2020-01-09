@@ -611,10 +611,10 @@ if(spankpayEnabled) {
             
             Transaction.wrap(function () {
                 order.removeRemoteHost(); //remove the IP address for the order, if any, because crypto!
-                order.setPaymentStatus(Order.PAYMENT_STATUS_PAID); //not require, but keeps things pretty in Business Manager
+                order.setPaymentStatus(Order.PAYMENT_STATUS_PAID); //not required, but keeps things pretty in Business Manager
             });
 
-            if(!empty(order.getCustomerEmail())) {
+            if(!empty(order.getCustomerEmail())) { //only send an email if we have an email address, duh!
                 COHelpers.sendConfirmationEmail(order, req.locale.id);
             }
 
