@@ -14,7 +14,7 @@ This cartridge is built against [SFCC SFRA](https://github.com/SalesforceCommerc
 
 2. Modify `paths: { base: {} }` value to point to your local copy of the `storefront-reference-architecture`'s `app_storefront_base` cartridge.
 
-3. Run `npm install` to install all of the local dependencies (**node version 11.15 required**).
+3. Run `npm install` to install all of the local dependencies (**node version 11.15 recommended**).
 
 4. Run `npm run compile:js` from the command line to compile all client-side JS files. Run `npm run compile:scss` to do the same for CSS.
 
