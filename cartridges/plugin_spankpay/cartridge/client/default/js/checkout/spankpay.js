@@ -51,7 +51,7 @@ $('.spankpay').on('click', function (e) {
 	});
 
 	var paymentForm = billingAddressForm + '&' + contactInfoForm + '&' + paymentInfoForm;
-	
+
 	$.ajax({
 		url: $('.spankpay').data('submiturl'),
 		method: 'POST',
@@ -144,12 +144,12 @@ spankpay.on('payment', payment => {
 							ID: data.orderID,
 							token: data.orderToken
 						};
-	
+
 						continueUrl += (continueUrl.indexOf('?') !== -1 ? '&' : '?') +
 							Object.keys(urlParams).map(function (key) {
 								return key + '=' + encodeURIComponent(urlParams[key]);
 							}).join('&');
-	
+
 						window.location.href = continueUrl;
 						defer.resolve(data);
 					}

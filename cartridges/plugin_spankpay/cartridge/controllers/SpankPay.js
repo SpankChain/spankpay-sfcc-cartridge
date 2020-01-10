@@ -242,7 +242,7 @@ if(spankpayEnabled) {
                 delete billingData.paymentInformation;
 
                 //create the order
-                var validatedProducts = validationHelpers.validateProducts(currentBasket);
+                validatedProducts = validationHelpers.validateProducts(currentBasket);
                 if (validatedProducts.error) {
                     res.json({
                         error: true,
