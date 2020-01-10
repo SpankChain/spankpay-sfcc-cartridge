@@ -2,7 +2,7 @@
 
 [SpankPay](https://spankpay.com) SFCC Cartridge by [SpankChain](https://www.spankchain.com)
 
-The Salesforce Commerce Cloud [SpankPay](https://spankpay.com) Cartridge is a lightweight, Salesforce Reference App best-practice-following implementation of [SpankChain](https://www.spankchain.com)'s [SpankPay](https://spankpay.com) blockchain-payment gateway.
+The Salesforce Commerce Cloud [SpankPay](https://spankpay.com) Cartridge is a lightweight Salesforce Reference App best-practice-following implementation of [SpankChain](https://www.spankchain.com)'s [SpankPay](https://spankpay.com) blockchain-payment gateway.
 
 # SFRA version
 
