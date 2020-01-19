@@ -9,7 +9,7 @@ function Dashboard() { //business manager merchant dashboard
     ISML.renderTemplate(template, pdict);
 }
 
-function Prefs() {
+function Prefs() { //shortcut to Site custom preferences
     let URLUtils = require('dw/web/URLUtils');
     let csrfProtection = require('dw/web/CSRFProtection');
     let url = URLUtils.url('ViewApplication-BM','csrf_token',csrfProtection.generateToken());
