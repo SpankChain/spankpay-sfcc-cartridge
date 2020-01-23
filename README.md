@@ -35,3 +35,19 @@ This cartridge is built against [SFCC SFRA](https://github.com/SalesforceCommerc
 12. Navigate to _Merchant Tools -> Ordering -> Payment Processors_ in Business Manager and create a new Payment Processor with ID: SPANKPAY and Description: SpankPay by SpankChain
 
 13. [SpankPay](https://spankpay.com)!
+
+# Template Overrides
+
+Template overrides are minor, but may affect existing functionality. If any of these templates are also overridden by another cartridge, you will have to merge the changes from that cartridge with the changes made in the SpankPay version of the template. The recommended approach is to create a separate cartridge which contains only the merged templates.
+ 
+_cartridges/plugin_spankpay/cartridge/templates/default/checkout/billing/paymentOptions/paymentOptionsContent.isml_
+_cartridges/plugin_spankpay/cartridge/templates/default/checkout/billing/paymentOptions/paymentOptionsSummary.isml_
+_cartridges/plugin_spankpay/cartridge/templates/default/checkout/billing/paymentOptions/paymentOptionsTabs.isml_
+_cartridges/plugin_spankpay/cartridge/templates/default/checkout/billing/billing.isml_
+_cartridges/plugin_spankpay/cartridge/templates/default/checkout/billing/billingSummary.isml_
+_cartridges/plugin_spankpay/cartridge/templates/default/checkout/confirmation/confirmation.isml_
+_cartridges/plugin_spankpay/cartridge/templates/default/checkout/checkout.isml_
+
+# Controller Overrides
+
+No existent SFRA Controllers or Routes are extended or overridden by this Cartridge.
