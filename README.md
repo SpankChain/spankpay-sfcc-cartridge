@@ -12,7 +12,7 @@ This cartridge is built against [SFCC SFRA](https://github.com/SalesforceCommerc
 
 1. Clone this repository.
 
-2. Modify `paths: { base: {} }` value to point to your local copy of the `storefront-reference-architecture`'s `app_storefront_base` cartridge.
+2. Modify `package.json`'s `paths: { base: {} }` value to point to your local copy of the `storefront-reference-architecture`'s `app_storefront_base` cartridge.
 
 3. Run `npm install` to install all of the local dependencies (**node version 11.15 recommended**).
 
